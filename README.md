@@ -1259,7 +1259,7 @@ resource "aws_iam_instance_profile" "petclinic-master-server-profile" {
 }
 
 resource "aws_instance" "kube-master" {
-    ami = "ami-053b0d53c279acc90"
+    ami = "ami-07d9b9ddc6cd8dd30"
     instance_type = "t3a.medium"
     iam_instance_profile = aws_iam_instance_profile.petclinic-master-server-profile.name
     vpc_security_group_ids = [aws_security_group.petclinic-kube-master-sg.id, aws_security_group.petclinic-mutual-sg.id]
@@ -1276,7 +1276,7 @@ resource "aws_instance" "kube-master" {
 }
 
 resource "aws_instance" "worker-1" {
-    ami = "ami-053b0d53c279acc90"
+    ami = "ami-07d9b9ddc6cd8dd30"
     instance_type = "t3a.medium"
     vpc_security_group_ids = [aws_security_group.petclinic-kube-worker-sg.id, aws_security_group.petclinic-mutual-sg.id]
     key_name = "clarus"
@@ -1292,7 +1292,7 @@ resource "aws_instance" "worker-1" {
 }
 
 resource "aws_instance" "worker-2" {
-    ami = "ami-053b0d53c279acc90"
+    ami = "ami-07d9b9ddc6cd8dd30"
     instance_type = "t3a.medium"
     vpc_security_group_ids = [aws_security_group.petclinic-kube-worker-sg.id, aws_security_group.petclinic-mutual-sg.id]
     key_name = "clarus"
@@ -1542,10 +1542,10 @@ ansible -i ./ansible/inventory/dev_stack_dynamic_inventory_aws_ec2.yaml all -m p
 
   - name: update apt-get and install kube packages
     shell: |
-      curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg && \
-      echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list && \
+      curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg && \
+      echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list && \
       apt-get update -q && \
-      apt-get install -qy kubelet=1.28.2-1.1 kubeadm=1.28.2-1.1 kubectl=1.28.2-1.1 kubernetes-cni docker.io
+      apt-get install -qy kubelet=1.29.0-1.1 kubeadm=1.29.0-1.1 kubectl=1.29.0-1.1 kubernetes-cni docker.io
       apt-mark hold kubelet kubeadm kubectl
 
   - name: Add ubuntu to docker group
@@ -1614,7 +1614,7 @@ ansible -i ./ansible/inventory/dev_stack_dynamic_inventory_aws_ec2.yaml all -m p
   - name: install Helm 
     shell: |
       cd /home/ubuntu
-      curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+      curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
       chmod 777 get_helm.sh
       ./get_helm.sh
 
@@ -1820,13 +1820,13 @@ services:
 * Install [conversion tool](https://kompose.io/installation/) named `Kompose` on your Jenkins Server. [User Guide](https://kompose.io/user-guide/#user-guide)
 
 ```bash
-curl -L https://github.com/kubernetes/kompose/releases/download/v1.31.2/kompose-linux-amd64 -o kompose
+curl -L https://github.com/kubernetes/kompose/releases/download/v1.32.0/kompose-linux-amd64 -o kompose
 chmod +x kompose
-sudo mv ./kompose /usr/local/bin/kompose
+
 kompose version
 ```
 
-* Install Helm [version 3+](https://github.com/helm/helm/releases) on Jenkins Server. [Introduction to Helm](https://helm.sh/docs/intro/). [Helm Installation](https://helm.sh/docs/intro/install/).
+* Install Helm [version 3+](https://github.com/helm/helm/releases) on Jenkins Server. [Introduction to Helm](https://helm.sh/docs/intro/). [Helm Installation](hsudo mv ./kompose /usr/local/bin/komposettps://helm.sh/docs/intro/install/).
 
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
@@ -1900,8 +1900,8 @@ DNS_NAME: "DNS Name of your application"
 * Create an ``S3 bucket`` for Helm charts. In the bucket, create a ``folder`` called ``stable/myapp``. The example in this pattern uses s3://petclinic-helm-charts-<put-your-name>/stable/myapp as the target chart repository.
 
 ```bash
-aws s3api create-bucket --bucket petclinic-helm-charts-<put-your-name> --region us-east-1
-aws s3api put-object --bucket petclinic-helm-charts-<put-your-name> --key stable/myapp/
+aws s3api create-bucket --bucket petclinic-helm-charts-x --region us-east-1
+aws s3api put-object --bucket petclinic-helm-charts-x --key stable/myapp/
 ```
 
 * Install the helm-s3 plugin for Amazon S3.
@@ -1923,7 +1923,7 @@ exit
 * ``Initialize`` the Amazon S3 Helm repository.
 
 ```bash
-AWS_REGION=us-east-1 helm s3 init s3://petclinic-helm-charts-<put-your-name>/stable/myapp 
+AWS_REGION=us-east-1 helm s3 init s3://petclinic-helm-charts-x/stable/myapp 
 ```
 
 * The command creates an ``index.yaml`` file in the target to track all the chart information that is stored at that location.
@@ -1931,14 +1931,14 @@ AWS_REGION=us-east-1 helm s3 init s3://petclinic-helm-charts-<put-your-name>/sta
 * Verify that the ``index.yaml`` file was created.
 
 ```bash
-aws s3 ls s3://petclinic-helm-charts-<put-your-name>/stable/myapp/
+aws s3 ls s3://petclinic-helm-charts-x/stable/myapp/
 ```
 
 * Add the Amazon S3 repository to Helm on the client machine. 
 
 ```bash
 helm repo ls
-AWS_REGION=us-east-1 helm repo add stable-petclinicapp s3://petclinic-helm-charts-<put-your-name>/stable/myapp/
+AWS_REGION=us-east-1 helm repo add stable-petclinicapp s3://petclinic-helm-charts-x/stable/myapp/
 ```
 
 * Update `version` and `appVersion` field of `k8s/petclinic_chart/Chart.yaml` file as below for testing.
