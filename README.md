@@ -1822,11 +1822,11 @@ services:
 ```bash
 curl -L https://github.com/kubernetes/kompose/releases/download/v1.32.0/kompose-linux-amd64 -o kompose
 chmod +x kompose
-
+sudo mv ./kompose /usr/local/bin/kompose
 kompose version
 ```
 
-* Install Helm [version 3+](https://github.com/helm/helm/releases) on Jenkins Server. [Introduction to Helm](https://helm.sh/docs/intro/). [Helm Installation](hsudo mv ./kompose /usr/local/bin/komposettps://helm.sh/docs/intro/install/).
+* Install Helm [version 3+](https://github.com/helm/helm/releases) on Jenkins Server. [Introduction to Helm](https://helm.sh/docs/intro/). [Helm Installation](https://helm.sh/docs/intro/install/).
 
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
@@ -1900,8 +1900,8 @@ DNS_NAME: "DNS Name of your application"
 * Create an ``S3 bucket`` for Helm charts. In the bucket, create a ``folder`` called ``stable/myapp``. The example in this pattern uses s3://petclinic-helm-charts-<put-your-name>/stable/myapp as the target chart repository.
 
 ```bash
-aws s3api create-bucket --bucket petclinic-helm-charts-x --region us-east-1
-aws s3api put-object --bucket petclinic-helm-charts-x --key stable/myapp/
+aws s3api create-bucket --bucket petclinic-helm-charts-<put-your-name> --region us-east-1
+aws s3api put-object --bucket petclinic-helm-charts-<put-your-name> --key stable/myapp/
 ```
 
 * Install the helm-s3 plugin for Amazon S3.
@@ -1923,7 +1923,7 @@ exit
 * ``Initialize`` the Amazon S3 Helm repository.
 
 ```bash
-AWS_REGION=us-east-1 helm s3 init s3://petclinic-helm-charts-x/stable/myapp 
+AWS_REGION=us-east-1 helm s3 init s3://petclinic-helm-charts-<put-your-name>/stable/myapp 
 ```
 
 * The command creates an ``index.yaml`` file in the target to track all the chart information that is stored at that location.
@@ -1931,14 +1931,14 @@ AWS_REGION=us-east-1 helm s3 init s3://petclinic-helm-charts-x/stable/myapp
 * Verify that the ``index.yaml`` file was created.
 
 ```bash
-aws s3 ls s3://petclinic-helm-charts-x/stable/myapp/
+aws s3 ls s3://petclinic-helm-charts-<put-your-name>/stable/myapp/
 ```
 
 * Add the Amazon S3 repository to Helm on the client machine. 
 
 ```bash
 helm repo ls
-AWS_REGION=us-east-1 helm repo add stable-petclinicapp s3://petclinic-helm-charts-x/stable/myapp/
+AWS_REGION=us-east-1 helm repo add stable-petclinicapp s3://petclinic-helm-charts-<put-your-name>/stable/myapp/
 ```
 
 * Update `version` and `appVersion` field of `k8s/petclinic_chart/Chart.yaml` file as below for testing.
@@ -2513,7 +2513,7 @@ git push origin dev
 - Download and extract the latest release of eksctl with the following command.
 
 ```bash
-curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+curl --silent --location "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
 ```
 
 - Move the extracted binary to /usr/local/bin.
@@ -2533,7 +2533,7 @@ eksctl version
 - Download the Amazon EKS vended kubectl binary.
 
 ```bash
-curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.7/2023-11-14/bin/linux/amd64/kubectl
+curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.29.0/2024-01-04/bin/linux/amd64/kubectl
 ```
 
 - Apply execute permissions to the binary.
@@ -2551,7 +2551,7 @@ sudo mv kubectl /usr/local/bin
 - After you install kubectl , you can verify its version with the following command:
 
 ```bash
-kubectl version --short --client
+kubectl version --client
 ```
 
 - Switch user to jenkins for creating eks cluster. Execute following commands as `jenkins` user.
@@ -2589,7 +2589,7 @@ eksctl create cluster -f cluster.yaml
 
 ```bash
 export PATH=$PATH:$HOME/bin
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.0/deploy/static/provider/cloud/deploy.yaml
 ```
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -3056,7 +3056,7 @@ aws ec2 create-key-pair --region us-east-1 --key-name petclinic-rancher --query 
 chmod 400 ~/.ssh/petclinic-rancher.pem
 ```
 
-* Launch an EC2 instance using `Ubuntu Server 20.04 LTS (HVM) (64-bit x86)` with `t3a.medium` type, 16 GB root volume,  `petclinic-rke-cluster-sg` security group, `petclinic-rke-role` IAM Role, `Name:Petclinic-Rancher-Cluster-Instance` tag and `petclinic-rancher.pem` key-pair. Take note of `subnet id` of EC2. 
+* Launch an EC2 instance using `Ubuntu Server 22.04 LTS (HVM) (64-bit x86)` with `t3a.medium` type, 16 GB root volume,  `petclinic-rke-cluster-sg` security group, `petclinic-rke-role` IAM Role, `Name:Petclinic-Rancher-Cluster-Instance` tag and `petclinic-rancher.pem` key-pair. Take note of `subnet id` of EC2. 
 
 * Attach a tag to the `nodes (intances)`, `subnets` and `security group` for Rancher with `Key = kubernetes.io/cluster/Petclinic-Rancher` and `Value = owned`.
   
@@ -3065,30 +3065,26 @@ chmod 400 ~/.ssh/petclinic-rancher.pem
 ```bash
 # Set hostname of instance
 sudo hostnamectl set-hostname rancher-instance-1
-# Update OS 
-sudo apt-get update -y
-sudo apt-get upgrade -y
 # Update the apt package index and install packages to allow apt to use a repository over HTTPS
-sudo apt-get install \
-  apt-transport-https \
-  ca-certificates \
-  curl \
-  gnupg \
-  lsb-release
+sudo apt-get update
+sudo apt-get install ca-certificates curl
 sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
 # Add the repository to Apt sources:
 echo \
-  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update
 
+# RKE is not compatible with the current Docker version (v25 hence we need to install an earlier version of Docker)
+# List the available versions:
+
+apt-cache madison docker-ce | awk '{ print $3 }'
+
 # Install and start Docker
-# RKE is not compatible with the current Docker version (v23 hence we need to install an earlier version of Docker
-sudo apt-get install docker-ce=5:20.10.24~3-0~ubuntu-jammy  docker-ce-cli=5:20.10.24~3-0~ubuntu-jammy containerd.io docker-compose-plugin
+sudo apt-get install docker-ce=5:20.10.24~3-0~ubuntu-jammy  docker-ce-cli=5:20.10.24~3-0~ubuntu-jammy containerd.io docker-buildx-plugin docker-compose-plugin
 sudo systemctl start docker
 sudo systemctl enable docker
 
@@ -3141,10 +3137,10 @@ From ACM            : *.clarusway.us   # change with your dns name
 
 * Create DNS A record for `rancher.clarusway.us` and attach the `petclinic-rancher-alb` application load balancer to it.
 
-* Install RKE, the Rancher Kubernetes Engine, [Kubernetes distribution and command-line tool](https://rancher.com/docs/rke/latest/en/installation/)) on Jenkins Server.
+* Install RKE, the Rancher Kubernetes Engine, [Kubernetes distribution and command-line tool](https://rancher.com/docs/rke/latest/en/installation/) on Jenkins Server.
 
 ```bash
-curl -SsL "https://github.com/rancher/rke/releases/download/v1.4.11/rke_linux-amd64" -o "rke_linux-amd64"
+curl -SsL "https://github.com/rancher/rke/releases/download/v1.5.6/rke_linux-amd64" -o "rke_linux-amd64"
 sudo mv rke_linux-amd64 /usr/local/bin/rke
 chmod +x /usr/local/bin/rke
 rke --version
@@ -3230,10 +3226,12 @@ kubectl create namespace cattle-system
 ```bash
 helm install rancher rancher-latest/rancher \
   --namespace cattle-system \
-  --set hostname=rancher.clarusway.us \
+  --set hostname=rancher.devopsaws.click \
   --set tls=external \
   --set replicas=1 \
   --set global.cattle.psp.enabled=false
+  
+# Change DNS name
   
 # Change DNS name
 ```
@@ -3405,6 +3403,42 @@ git checkout release
 git merge feature/msp-25
 git push origin release
 ```
+
+### Download the package from nexus server (Optinal) 
+
+- Create a folder under `/home/ec2-user` folder named `nexus-optional`.
+
+```bash
+mkdir nexus-optional && cd nexus-optional/
+```
+
+- Get the link address of `spring-petclinic-admin-server-2.1.2.jar` file and download it.
+
+```bash
+curl -u admin:123  -L -X GET  http://34.228.221.228:8081/repository/maven-releases/org/springframework/samples/petclinic/admin/spring-petclinic-admin-server/2.1.2/spring-petclinic-admin-server-2.1.2.jar --output admin.jar
+```
+
+- Create a Docker file for admin-server.
+
+```Dockerfile
+FROM openjdk:11-jre
+ARG DOCKERIZE_VERSION=v0.7.0
+ENV SPRING_PROFILES_ACTIVE docker,mysql
+ADD https://github.com/jwilder/dockerize/releases/download/${DOCKERIZE_VERSION}/dockerize-alpine-linux-amd64-${DOCKERIZE_VERSION}.tar.gz dockerize.tar.gz
+RUN tar -xzf dockerize.tar.gz
+RUN chmod +x dockerize
+COPY admin.jar /app.jar  # We just change this line.
+EXPOSE 9090
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
+```
+
+- Build the image
+
+```bash
+docker build -t admin-server .
+```
+
+- This is the alternative method to create an image.
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 ## MSP 26 - Prepare a Staging Pipeline
@@ -3705,7 +3739,7 @@ eksctl create cluster -f cluster.yaml
 
 ```bash
 export PATH=$PATH:$HOME/bin
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.0/deploy/static/provider/cloud/deploy.yaml
 ```
 
 
@@ -3956,14 +3990,6 @@ git push origin main
 ## MSP 28 - Setting Domain Name and TLS for Production Pipeline with Route 53
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-* Create `feature/msp-28` branch from `main`.
-
-``` bash
-git checkout main
-git branch feature/msp-28
-git checkout feature/msp-28
-```
-
 * Create an `A` record of `petclinic.clarusway.us` in your hosted zone (in our case `clarusway.us`) using AWS Route 53 domain registrar and bind it to your `petclinic cluster`.
 
 * Configure TLS(SSL) certificate for `petclinic.clarusway.us` using `cert-manager` on petclinic K8s cluster with the following steps.
@@ -3997,7 +4023,7 @@ sudo su - jenkins
   * Install the `Custom Resource Definition` resources separately
 
   ```bash
-  kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.crds.yaml
+  kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.4/cert-manager.crds.yaml
   ```
 
   * Install the cert-manager Helm chart
@@ -4006,7 +4032,7 @@ sudo su - jenkins
 helm install \
   cert-manager jetstack/cert-manager \
   --namespace cert-manager \
-  --version v1.13.2
+  --version v1.14.4
   ```
 
   * Verify that the cert-manager is deployed correctly.
@@ -4071,17 +4097,6 @@ spec:
 ```
 
 * Check and verify that the TLS(SSL) certificate created and successfully issued to `petclinic.clarusway.us` by checking URL of `https://petclinic.clarusway.us`
-
-* Commit the change, then push the tls script to the remote repo.
-
-``` bash
-git add .
-git commit -m 'added tls scripts for petclinic-production'
-git push --set-upstream origin feature/msp-28
-git checkout main
-git merge feature/msp-28
-git push origin main 
-```
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 ## MSP 29 - Monitoring with Prometheus and Grafana
