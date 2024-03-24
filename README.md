@@ -3137,7 +3137,7 @@ From ACM            : *.clarusway.us   # change with your dns name
 
 * Create DNS A record for `rancher.clarusway.us` and attach the `petclinic-rancher-alb` application load balancer to it.
 
-* Install RKE, the Rancher Kubernetes Engine, [Kubernetes distribution and command-line tool](https://rancher.com/docs/rke/latest/en/installation/) on Jenkins Server.
+* Install RKE, the Rancher Kubernetes Engine, [Kubernetes distribution and command-line tool](https://rancher.com/docs/rke/latest/en/installation/)) on Jenkins Server.
 
 ```bash
 curl -SsL "https://github.com/rancher/rke/releases/download/v1.5.6/rke_linux-amd64" -o "rke_linux-amd64"
@@ -3226,12 +3226,10 @@ kubectl create namespace cattle-system
 ```bash
 helm install rancher rancher-latest/rancher \
   --namespace cattle-system \
-  --set hostname=rancher.devopsaws.click \
+  --set hostname=rancher.clarusway.us \
   --set tls=external \
   --set replicas=1 \
   --set global.cattle.psp.enabled=false
-  
-# Change DNS name
   
 # Change DNS name
 ```
